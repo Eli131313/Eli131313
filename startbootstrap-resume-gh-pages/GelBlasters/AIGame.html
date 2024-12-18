@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Ball Game</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        h1 {
+            margin-top: 10px;
+        }
+
+        /* Game Area */
+        #gameArea {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 500px;
+            margin: 0 auto;
+            background-color: #222;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        /* Paddle */
+        #paddle {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            width: 100px;
+            height: 15px;
+            background-color: #00ff00;
+            border-radius: 5px;
+            transform: translateX(-50%);
+        }
+
+        /* Ball */
+        .ball {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+        }
+
+        /* Score Display */
+        #score {
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Catch the Ball Game</h1>
+    <p id="score">Score: 0</p>
+    <div id="gameArea">
+        <div id="paddle"></div>
+    </div>
+
+    <script>
+        // Game Elements
+        const gameArea = document.getElementById("gameArea");
+        const paddle = document.getElementById("paddle");
+        const scoreDisplay = document.getElementById("score");
+
+        let score = 0;
+        let paddleSpeed = 20;
+        let ballSpeed = 3;
+        let balls = [];
+
+        // Paddle Movement
+        document.addEventListener("keydown", (e) => {
+            const paddleRect = paddle.getBoundingClientRect();
+            const gameRect = gameArea.getBoundingClientRect();
+
+            if (e.key === "ArrowLeft" && paddleRect.left > gameRect.left) {
+                paddle.style.left = `${paddle.offsetLeft - paddleSpeed}px`;
+            }
+            if (e.key === "ArrowRight" && paddleRect.right < gameRect.right) {
+                paddle.style.left = `${paddle.offsetLeft + paddleSpeed}px`;
+            }
+        });
+
+        // Create a New Ball
+        function createBall() {
+            const ball = document.createElement("div");
+            ball.classList.add("ball");
+
+            const ballStartPosition = Math.random() * (gameArea.offsetWidth - 20);
+            ball.style.left = `${ballStartPosition}px`;
+            ball.style.top = "0px";
+
+            gameArea.appendChild(ball);
+            balls.push(ball);
+        }
+
+        // Move Balls
+        function moveBalls() {
+            balls.forEach((ball, index) => {
+                const ballTop = ball.offsetTop;
+                const paddleRect = paddle.getBoundingClientRect();
+                const ballRect = ball.getBoundingClientRect();
+                const gameRect = gameArea.getBoundingClientRect();
+
+                // Move ball downward
+                ball.style.top = `${ballTop + ballSpeed}px`;
+
+                // Check if ball hits the paddle
+                if (
+                    ballRect.bottom >= paddleRect.top &&
+                    ballRect.left >= paddleRect.left &&
+                    ballRect.right <= paddleRect.right
+                ) {
+                    // Remove ball and increase score
+                    ball.remove();
+                    balls.splice(index, 1);
+                    score++;
+                    scoreDisplay.textContent = `Score: ${score}`;
+                }
+
+                // Check if ball hits the bottom
+                if (ballRect.bottom >= gameRect.bottom) {
+                    alert(`Game Over! Your final score is ${score}.`);
+                    resetGame();
+                }
+            });
+        }
+
+        // Game Loop
+        function gameLoop() {
+            moveBalls();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Reset Game
+        function resetGame() {
+            balls.forEach((ball) => ball.remove());
+            balls = [];
+            score = 0;
+            scoreDisplay.textContent = `Score: ${score}`;
+        }
+
+        // Start Game
+        setInterval(createBall, 1000); // Create a new ball every second
+        gameLoop();
+    </script>
+</body>
+</html>
